@@ -10,18 +10,24 @@ sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
+    mavenLocal()
+    maven {
+        url "https://plugins.gradle.org/m2/"
+    }
 }
 
 dependencies {
-    compile group: 'commons-io', name: 'commons-io', version: '2.6'
-    compile group: 'com.google.guava', name: 'guava', version: '23.0'
+    compile group: 'com.lancethomps', name: 'lava', version: '1.5.0'
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
     version '2019.3.4'
-    plugins "sh"
+    plugins = [
+      "java",
+      "sh"
+    ]
 }
 patchPluginXml {
     changeNotes """
