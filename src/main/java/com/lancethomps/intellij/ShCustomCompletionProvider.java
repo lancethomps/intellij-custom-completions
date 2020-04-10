@@ -1,11 +1,13 @@
 package com.lancethomps.intellij;
 
 import static java.util.stream.Collectors.toList;
+import static org.apache.commons.lang3.StringUtils.replaceOnce;
 
 import java.io.File;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -22,7 +24,10 @@ import com.lancethomps.lava.common.file.FileUtil;
 
 public class ShCustomCompletionProvider extends CompletionProvider<CompletionParameters> {
 
-  public static final Set<Pattern> FILE_NAME_BLACK_LIST = ImmutableSet.of(
+  public static final Set<String> FILE_NAME_BLACK_LIST = ImmutableSet.of(
+      "kitchen"
+  );
+  public static final Set<Pattern> FILE_NAME_BLACK_LIST_REGEX = ImmutableSet.of(
       Pattern.compile("^x86_.*"),
       Pattern.compile(".*-[0-9.]+$")
   );
@@ -37,7 +42,14 @@ public class ShCustomCompletionProvider extends CompletionProvider<CompletionPar
     if (!file.canExecute()) {
       return false;
     }
-    return Checks.passesWhiteAndBlackListCheck(file.getName(), null, FILE_NAME_BLACK_LIST, true).getLeft();
+    return Checks.passesWhiteAndBlackListCheck(
+        file.getName(),
+        null,
+        FILE_NAME_BLACK_LIST,
+        null,
+        FILE_NAME_BLACK_LIST_REGEX,
+        true
+    ).getLeft();
   }
 
   @Override
@@ -52,7 +64,9 @@ public class ShCustomCompletionProvider extends CompletionProvider<CompletionPar
       return;
     }
     List<LookupElementBuilder> elements = FileUtil.findFiles(ShCustomCompletionProvider::includePathFile, false, PATH_DIRS).stream()
-        .map(file -> LookupElementBuilder.create(file.getName()))
+        .map(File::getName)
+        .flatMap(name -> name.startsWith("git-") ? Stream.of(name, replaceOnce(name, "git-", "git ")) : Stream.of(name))
+        .map(LookupElementBuilder::create)
         .collect(toList());
     result.addAllElements(elements);
   }
