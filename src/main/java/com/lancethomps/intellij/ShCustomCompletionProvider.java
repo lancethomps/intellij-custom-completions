@@ -65,7 +65,7 @@ public class ShCustomCompletionProvider extends CompletionProvider<CompletionPar
     }
     List<LookupElementBuilder> elements = FileUtil.findFiles(ShCustomCompletionProvider::includePathFile, false, PATH_DIRS).stream()
         .map(File::getName)
-        .flatMap(name -> name.startsWith("git-") ? Stream.of(name, replaceOnce(name, "git-", "git ")) : Stream.of(name))
+        .flatMap(name -> name.startsWith("git-") ? Stream.of(replaceOnce(name, "git-", "git ")) : Stream.of(name))
         .map(LookupElementBuilder::create)
         .collect(toList());
     result.addAllElements(elements);
