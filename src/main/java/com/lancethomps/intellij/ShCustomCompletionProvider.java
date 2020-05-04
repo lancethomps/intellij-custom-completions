@@ -4,15 +4,15 @@ import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.replaceOnce;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import com.google.common.collect.ImmutableSet;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
@@ -20,34 +20,34 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.util.ProcessingContext;
 import com.lancethomps.lava.common.Checks;
+import com.lancethomps.lava.common.Patterns;
 import com.lancethomps.lava.common.file.FileUtil;
+import com.lancethomps.lava.common.properties.PropertyParser;
 
 public class ShCustomCompletionProvider extends CompletionProvider<CompletionParameters> {
 
-  public static final Set<String> FILE_NAME_BLACK_LIST = ImmutableSet.of(
-      "kitchen"
-  );
-  public static final Set<Pattern> FILE_NAME_BLACK_LIST_REGEX = ImmutableSet.of(
-      Pattern.compile("^x86_.*"),
-      Pattern.compile(".*-[0-9.]+$")
-  );
-  public static final Set<File> PATH_DIRS = ImmutableSet.of(
-      new File(System.getenv("HOME") + "/bin"),
-      new File(System.getenv("HOME") + "/.dotfiles"),
-      new File("/usr/local/bin")
-  );
+  public static final File CONFIG_FILE = new File(PluginsHelper.USER_HOME, ".config/intellij-custom-completions/sh-completions.yaml");
+  private static final Pattern BASH_FUNCTIONS_EXTRACTOR = Pattern.compile("function (.*?)\\(\\)");
   private static final Logger LOG = Logger.getInstance(ShCustomCompletionContributor.class);
 
-  public static boolean includePathFile(File file) {
+  public static ShCustomCompletionConfig getConfig() {
+    if (CONFIG_FILE.exists() && CONFIG_FILE.isFile()) {
+      String yaml = PropertyParser.parseAndReplaceWithProps(FileUtil.readFile(CONFIG_FILE));
+      return PluginsHelper.fromYaml(yaml, ShCustomCompletionConfig.class);
+    }
+    return new ShCustomCompletionConfig();
+  }
+
+  public static boolean includePathFile(ShCustomCompletionConfig config, File file) {
     if (!file.canExecute()) {
       return false;
     }
     return Checks.passesWhiteAndBlackListCheck(
         file.getName(),
-        null,
-        FILE_NAME_BLACK_LIST,
-        null,
-        FILE_NAME_BLACK_LIST_REGEX,
+        config.getFileNameWhiteList(),
+        config.getFileNameBlackList(),
+        config.getFileNameWhiteListRegex(),
+        config.getFileNameBlackListRegex(),
         true
     ).getLeft();
   }
@@ -63,12 +63,60 @@ public class ShCustomCompletionProvider extends CompletionProvider<CompletionPar
     if (StringUtils.isNumeric(text)) {
       return;
     }
-    List<LookupElementBuilder> elements = FileUtil.findFiles(ShCustomCompletionProvider::includePathFile, false, PATH_DIRS).stream()
+    ShCustomCompletionConfig config = getConfig();
+    List<LookupElementBuilder> elements = new ArrayList<>();
+
+    elements.addAll(getBashFunctionsCompletions(parameters, context, result, config));
+    elements.addAll(getManualCompletions(parameters, context, result, config));
+    elements.addAll(getPathExecutablesCompletions(parameters, context, result, config));
+
+    result.addAllElements(elements);
+  }
+
+  private List<LookupElementBuilder> getBashFunctionsCompletions(
+      @NotNull CompletionParameters parameters,
+      @NotNull ProcessingContext context,
+      @NotNull CompletionResultSet result,
+      @NotNull ShCustomCompletionConfig config
+  ) {
+    if (Checks.isEmpty(config.getBashFunctionsFiles())) {
+      return Collections.emptyList();
+    }
+    return config.getBashFunctionsFiles().stream()
+        .filter(File::isFile)
+        .flatMap(file -> Patterns.findMatchesAndExtract(BASH_FUNCTIONS_EXTRACTOR, FileUtil.readFile(file), 1).stream())
+        .map(LookupElementBuilder::create)
+        .collect(toList());
+  }
+
+  private List<LookupElementBuilder> getManualCompletions(
+      @NotNull CompletionParameters parameters,
+      @NotNull ProcessingContext context,
+      @NotNull CompletionResultSet result,
+      @NotNull ShCustomCompletionConfig config
+  ) {
+    if (Checks.isEmpty(config.getAddCompletions())) {
+      return Collections.emptyList();
+    }
+    return config.getAddCompletions().stream()
+        .map(LookupElementBuilder::create)
+        .collect(toList());
+  }
+
+  private List<LookupElementBuilder> getPathExecutablesCompletions(
+      @NotNull CompletionParameters parameters,
+      @NotNull ProcessingContext context,
+      @NotNull CompletionResultSet result,
+      @NotNull ShCustomCompletionConfig config
+  ) {
+    if (Checks.isEmpty(config.getPathDirs())) {
+      return Collections.emptyList();
+    }
+    return FileUtil.findFiles(file -> includePathFile(config, file), false, config.getPathDirs()).stream()
         .map(File::getName)
         .flatMap(name -> name.startsWith("git-") ? Stream.of(replaceOnce(name, "git-", "git ")) : Stream.of(name))
         .map(LookupElementBuilder::create)
         .collect(toList());
-    result.addAllElements(elements);
   }
 
 }
