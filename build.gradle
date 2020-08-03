@@ -1,7 +1,7 @@
 plugins {
     id "com.github.ben-manes.versions" version "0.28.0"
     id "java"
-    id "org.jetbrains.intellij" version "0.4.19"
+    id "org.jetbrains.intellij" version "0.4.21"
 }
 
 group "com.lancethomps"
@@ -24,7 +24,7 @@ dependencies {
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
-    version "2020.1.1"
+    version "2020.2"
     plugins = [
       "java",
       "sh"
