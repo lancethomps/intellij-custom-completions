@@ -27,7 +27,8 @@ intellij {
     version "2020.3"
     plugins = [
       "java",
-      "sh"
+      "sh",
+      "pro.bashsupport:1.5.14.203"
     ]
 }
 patchPluginXml {

@@ -10,9 +10,12 @@
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.lang</depends>
     <depends>com.jetbrains.sh</depends>
+    <depends>pro.bashsupport</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <completion.contributor language="Shell Script"
+                                implementationClass="com.lancethomps.intellij.ShCustomCompletionContributor"/>
+        <completion.contributor language="BashPro Shell Script"
                                 implementationClass="com.lancethomps.intellij.ShCustomCompletionContributor"/>
     </extensions>
 </idea-plugin>
