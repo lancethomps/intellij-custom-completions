@@ -16,8 +16,11 @@ import org.jetbrains.annotations.NotNull;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
+import com.intellij.codeInsight.completion.PrioritizedLookupElement;
+import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.util.PlatformIcons;
 import com.intellij.util.ProcessingContext;
 import com.lancethomps.lava.common.Checks;
 import com.lancethomps.lava.common.Patterns;
@@ -64,16 +67,20 @@ public class ShCustomCompletionProvider extends CompletionProvider<CompletionPar
       return;
     }
     ShCustomCompletionConfig config = getConfig();
-    List<LookupElementBuilder> elements = new ArrayList<>();
+    List<LookupElement> elements = new ArrayList<>();
 
     elements.addAll(getBashFunctionsCompletions(parameters, context, result, config));
     elements.addAll(getManualCompletions(parameters, context, result, config));
     elements.addAll(getPathExecutablesCompletions(parameters, context, result, config));
 
+    if (config.getPriority() != null) {
+      elements = elements.stream().map(elem -> PrioritizedLookupElement.withPriority(elem, config.getPriority())).collect(toList());
+    }
+
     result.addAllElements(elements);
   }
 
-  private List<LookupElementBuilder> getBashFunctionsCompletions(
+  private List<LookupElement> getBashFunctionsCompletions(
       @NotNull CompletionParameters parameters,
       @NotNull ProcessingContext context,
       @NotNull CompletionResultSet result,
@@ -86,10 +93,11 @@ public class ShCustomCompletionProvider extends CompletionProvider<CompletionPar
         .filter(File::isFile)
         .flatMap(file -> Patterns.findMatchesAndExtract(BASH_FUNCTIONS_EXTRACTOR, FileUtil.readFile(file), 1).stream())
         .map(LookupElementBuilder::create)
+        .map(elem -> elem.withTypeText("function", PlatformIcons.FUNCTION_ICON, true))
         .collect(toList());
   }
 
-  private List<LookupElementBuilder> getManualCompletions(
+  private List<LookupElement> getManualCompletions(
       @NotNull CompletionParameters parameters,
       @NotNull ProcessingContext context,
       @NotNull CompletionResultSet result,
@@ -103,7 +111,7 @@ public class ShCustomCompletionProvider extends CompletionProvider<CompletionPar
         .collect(toList());
   }
 
-  private List<LookupElementBuilder> getPathExecutablesCompletions(
+  private List<LookupElement> getPathExecutablesCompletions(
       @NotNull CompletionParameters parameters,
       @NotNull ProcessingContext context,
       @NotNull CompletionResultSet result,
@@ -116,6 +124,7 @@ public class ShCustomCompletionProvider extends CompletionProvider<CompletionPar
         .map(File::getName)
         .flatMap(name -> name.startsWith("git-") ? Stream.of(replaceOnce(name, "git-", "git ")) : Stream.of(name))
         .map(LookupElementBuilder::create)
+        .map(elem -> elem.withTypeText("command", PlatformIcons.FILE_ICON, true))
         .collect(toList());
   }
 

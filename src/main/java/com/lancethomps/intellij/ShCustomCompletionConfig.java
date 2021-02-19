@@ -13,22 +13,7 @@ public class ShCustomCompletionConfig {
   private Set<String> fileNameWhiteList;
   private Set<Pattern> fileNameWhiteListRegex;
   private Set<File> pathDirs;
-
-  public Set<String> getFileNameWhiteList() {
-    return fileNameWhiteList;
-  }
-
-  public void setFileNameWhiteList(Set<String> fileNameWhiteList) {
-    this.fileNameWhiteList = fileNameWhiteList;
-  }
-
-  public Set<Pattern> getFileNameWhiteListRegex() {
-    return fileNameWhiteListRegex;
-  }
-
-  public void setFileNameWhiteListRegex(Set<Pattern> fileNameWhiteListRegex) {
-    this.fileNameWhiteListRegex = fileNameWhiteListRegex;
-  }
+  private Double priority;
 
   public Set<String> getAddCompletions() {
     return addCompletions;
@@ -62,12 +47,36 @@ public class ShCustomCompletionConfig {
     this.fileNameBlackListRegex = fileNameBlackListRegex;
   }
 
+  public Set<String> getFileNameWhiteList() {
+    return fileNameWhiteList;
+  }
+
+  public void setFileNameWhiteList(Set<String> fileNameWhiteList) {
+    this.fileNameWhiteList = fileNameWhiteList;
+  }
+
+  public Set<Pattern> getFileNameWhiteListRegex() {
+    return fileNameWhiteListRegex;
+  }
+
+  public void setFileNameWhiteListRegex(Set<Pattern> fileNameWhiteListRegex) {
+    this.fileNameWhiteListRegex = fileNameWhiteListRegex;
+  }
+
   public Set<File> getPathDirs() {
     return pathDirs;
   }
 
   public void setPathDirs(Set<File> pathDirs) {
     this.pathDirs = pathDirs;
+  }
+
+  public Double getPriority() {
+    return priority;
+  }
+
+  public void setPriority(Double priority) {
+    this.priority = priority;
   }
 
 }
