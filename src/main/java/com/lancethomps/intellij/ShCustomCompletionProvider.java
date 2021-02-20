@@ -19,6 +19,7 @@ import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.completion.PrioritizedLookupElement;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.util.PlatformIcons;
 import com.intellij.util.ProcessingContext;
@@ -93,7 +94,7 @@ public class ShCustomCompletionProvider extends CompletionProvider<CompletionPar
         .filter(File::isFile)
         .flatMap(file -> Patterns.findMatchesAndExtract(BASH_FUNCTIONS_EXTRACTOR, FileUtil.readFile(file), 1).stream())
         .map(LookupElementBuilder::create)
-        .map(elem -> elem.withTypeText("function", PlatformIcons.FUNCTION_ICON, true))
+        .map(elem -> elem.withIcon(PlatformIcons.FUNCTION_ICON).withTypeText("function", true))
         .collect(toList());
   }
 
@@ -124,7 +125,7 @@ public class ShCustomCompletionProvider extends CompletionProvider<CompletionPar
         .map(File::getName)
         .flatMap(name -> name.startsWith("git-") ? Stream.of(replaceOnce(name, "git-", "git ")) : Stream.of(name))
         .map(LookupElementBuilder::create)
-        .map(elem -> elem.withTypeText("command", PlatformIcons.FILE_ICON, true))
+        .map(elem -> elem.withIcon(AllIcons.Nodes.Console).withTypeText("command", true))
         .collect(toList());
   }
 
