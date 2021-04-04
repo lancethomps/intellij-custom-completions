@@ -8,6 +8,7 @@ public class ShCustomCompletionConfig {
 
   private Set<String> addCompletions;
   private Set<File> bashFunctionsFiles;
+  private Long cacheExpireAfterSeconds;
   private Set<String> fileNameBlackList;
   private Set<Pattern> fileNameBlackListRegex;
   private Set<String> fileNameWhiteList;
@@ -29,6 +30,14 @@ public class ShCustomCompletionConfig {
 
   public void setBashFunctionsFiles(Set<File> bashFunctionsFiles) {
     this.bashFunctionsFiles = bashFunctionsFiles;
+  }
+
+  public Long getCacheExpireAfterSeconds() {
+    return cacheExpireAfterSeconds;
+  }
+
+  public void setCacheExpireAfterSeconds(Long cacheExpireAfterSeconds) {
+    this.cacheExpireAfterSeconds = cacheExpireAfterSeconds;
   }
 
   public Set<String> getFileNameBlackList() {

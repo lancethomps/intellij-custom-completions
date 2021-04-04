@@ -6,6 +6,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -36,39 +38,26 @@ public class ShCustomCompletionProvider extends CompletionProvider<CompletionPar
 
   public static final File CONFIG_FILE = new File(PluginsHelper.USER_HOME, ".config/intellij-custom-completions/sh-completions.yaml");
   private static final Pattern BASH_FUNCTIONS_EXTRACTOR = Pattern.compile("function (.*?)\\(\\)");
+  private static final CompletionCacheLoader CACHE_LOADER = new CompletionCacheLoader();
+  private static final long DEFAULT_CACHE_EXPIRE_AFTER_SECONDS = 60;
   private static final GitCommandInsertHandler GIT_COMMAND_INSERT_HANDLER = new GitCommandInsertHandler();
   private static final Logger LOG = Logger.getInstance(ShCustomCompletionContributor.class);
+  private static LoadingCache<ShCustomCompletionType, List<LookupElement>> cache = createCache(DEFAULT_CACHE_EXPIRE_AFTER_SECONDS);
   private static ShCustomCompletionConfig loadedConfig = new ShCustomCompletionConfig();
   private static long loadedConfigLastModified;
-  private static final LoadingCache<ShCustomCompletionType, List<LookupElement>> CACHE = CacheBuilder.newBuilder()
-    .expireAfterWrite(1, TimeUnit.MINUTES)
-    .build(new CacheLoader<ShCustomCompletionType, List<LookupElement>>() {
-      @Override
-      public List<LookupElement> load(ShCustomCompletionType key) throws Exception {
-        LOG.info(String.format("Getting new List<LookupElement> for: %s", key));
-        ShCustomCompletionConfig config = getConfig();
-        switch (key) {
-          case ALL:
-            return createElements(config);
-          case BASH_FUNCTIONS:
-            return getBashFunctionsCompletions(config);
-          case MANUAL:
-            return getManualCompletions(config);
-          case PATH_EXECUTABLES:
-            return getPathExecutablesCompletions(config);
-          default:
-            throw new IllegalArgumentException(String.format("ShCustomCompletionType not recognized: %s", key));
-        }
-      }
-    });
 
   public static ShCustomCompletionConfig getConfig() {
     if (CONFIG_FILE.exists() && CONFIG_FILE.isFile() && CONFIG_FILE.lastModified() > loadedConfigLastModified) {
       loadedConfigLastModified = CONFIG_FILE.lastModified();
+      Long currentCacheExpireAfterSeconds = loadedConfig.getCacheExpireAfterSeconds();
       LOG.info("Loading new ShCustomCompletionConfig file");
       String yaml = PropertyParser.parseAndReplaceWithProps(FileUtil.readFile(CONFIG_FILE));
       loadedConfig = PluginsHelper.fromYaml(yaml, ShCustomCompletionConfig.class);
-      CACHE.invalidateAll();
+      if (Objects.equals(loadedConfig.getCacheExpireAfterSeconds(), currentCacheExpireAfterSeconds)) {
+        cache.invalidateAll();
+      } else {
+        cache = createCache(Optional.ofNullable(loadedConfig.getCacheExpireAfterSeconds()).orElse(DEFAULT_CACHE_EXPIRE_AFTER_SECONDS));
+      }
     }
     return loadedConfig;
   }
@@ -85,6 +74,13 @@ public class ShCustomCompletionProvider extends CompletionProvider<CompletionPar
       config.getFileNameBlackListRegex(),
       true
     ).getLeft();
+  }
+
+  private static LoadingCache<ShCustomCompletionType, List<LookupElement>> createCache(long expireAfterSeconds) {
+    LOG.info(String.format("Creating cache with expireAfterWrite of %s seconds", expireAfterSeconds));
+    return CacheBuilder.newBuilder()
+      .expireAfterWrite(expireAfterSeconds, TimeUnit.SECONDS)
+      .build(CACHE_LOADER);
   }
 
   private static List<LookupElement> createElements(
@@ -166,13 +162,35 @@ public class ShCustomCompletionProvider extends CompletionProvider<CompletionPar
     }
 
     ShCustomCompletionConfig config = getConfig();
-    List<LookupElement> elements = CACHE.getUnchecked(ShCustomCompletionType.ALL);
+    List<LookupElement> elements = cache.getUnchecked(ShCustomCompletionType.ALL);
 
     if (config.getPriority() != null) {
       elements = elements.stream().map(elem -> PrioritizedLookupElement.withPriority(elem, config.getPriority())).collect(toList());
     }
 
     result.addAllElements(elements);
+  }
+
+  static class CompletionCacheLoader extends CacheLoader<ShCustomCompletionType, List<LookupElement>> {
+
+    @Override
+    public List<LookupElement> load(ShCustomCompletionType key) throws Exception {
+      LOG.info(String.format("Getting new List<LookupElement> for: %s", key));
+      ShCustomCompletionConfig config = getConfig();
+      switch (key) {
+        case ALL:
+          return createElements(config);
+        case BASH_FUNCTIONS:
+          return getBashFunctionsCompletions(config);
+        case MANUAL:
+          return getManualCompletions(config);
+        case PATH_EXECUTABLES:
+          return getPathExecutablesCompletions(config);
+        default:
+          throw new IllegalArgumentException(String.format("ShCustomCompletionType not recognized: %s", key));
+      }
+    }
+
   }
 
 }
