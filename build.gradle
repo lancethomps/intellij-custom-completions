@@ -25,7 +25,7 @@ dependencies {
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 // See https://github.com/JetBrains/gradle-intellij-plugin/blob/master/FAQ.md
 intellij {
-  version "2021.1"
+  version "2021.2"
 
   pluginName "intellij-custom-completions"
   downloadSources = true
@@ -35,7 +35,7 @@ intellij {
   plugins = [
     "java",
     "sh",
-    "pro.bashsupport:1.5.16.211"
+    "pro.bashsupport:2.0.3.212"
   ]
 }
 patchPluginXml {
