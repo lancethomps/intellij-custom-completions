@@ -7,12 +7,15 @@ import java.util.regex.Pattern;
 public class ShCustomCompletionConfig {
 
   private Set<String> addCompletions;
+  private Set<String> addEnvVars;
+  private Set<String> addFunctions;
   private Set<File> bashFunctionsFiles;
   private Long cacheExpireAfterSeconds;
   private Set<String> fileNameBlackList;
   private Set<Pattern> fileNameBlackListRegex;
   private Set<String> fileNameWhiteList;
   private Set<Pattern> fileNameWhiteListRegex;
+  private String logLevel;
   private Set<File> pathDirs;
   private Double priority;
 
@@ -22,6 +25,22 @@ public class ShCustomCompletionConfig {
 
   public void setAddCompletions(Set<String> addCompletions) {
     this.addCompletions = addCompletions;
+  }
+
+  public Set<String> getAddEnvVars() {
+    return addEnvVars;
+  }
+
+  public void setAddEnvVars(Set<String> addEnvVars) {
+    this.addEnvVars = addEnvVars;
+  }
+
+  public Set<String> getAddFunctions() {
+    return addFunctions;
+  }
+
+  public void setAddFunctions(Set<String> addFunctions) {
+    this.addFunctions = addFunctions;
   }
 
   public Set<File> getBashFunctionsFiles() {
@@ -70,6 +89,14 @@ public class ShCustomCompletionConfig {
 
   public void setFileNameWhiteListRegex(Set<Pattern> fileNameWhiteListRegex) {
     this.fileNameWhiteListRegex = fileNameWhiteListRegex;
+  }
+
+  public String getLogLevel() {
+    return logLevel;
+  }
+
+  public void setLogLevel(String logLevel) {
+    this.logLevel = logLevel;
   }
 
   public Set<File> getPathDirs() {

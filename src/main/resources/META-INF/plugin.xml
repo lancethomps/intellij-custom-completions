@@ -1,21 +1,21 @@
 <idea-plugin>
-    <id>com.lancethomps.intellij-custom-completions</id>
-    <name>IntelliJ Custom Completions</name>
-    <vendor email="lthompson05@gmail.com" url="https://github.com/lancethomps">lancethomps</vendor>
+  <id>com.lancethomps.intellij-custom-completions</id>
+  <name>IntelliJ Custom Completions</name>
+  <vendor email="lthompson05@gmail.com" url="https://github.com/lancethomps">lancethomps</vendor>
 
-    <description>A bunch of custom completions for different languages</description>
+  <description>A bunch of custom completions for different languages</description>
 
-    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
-         on how to target different products -->
-    <depends>com.intellij.modules.platform</depends>
-    <depends>com.intellij.modules.lang</depends>
-    <depends>com.jetbrains.sh</depends>
-    <depends>pro.bashsupport</depends>
+  <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+       on how to target different products -->
+  <depends>com.intellij.modules.platform</depends>
+  <depends>com.intellij.modules.lang</depends>
+  <!--    <depends>com.jetbrains.sh</depends>-->
+  <depends>pro.bashsupport</depends>
 
-    <extensions defaultExtensionNs="com.intellij">
-        <completion.contributor language="Shell Script"
-                                implementationClass="com.lancethomps.intellij.ShCustomCompletionContributor"/>
-        <completion.contributor language="BashPro Shell Script"
-                                implementationClass="com.lancethomps.intellij.ShCustomCompletionContributor"/>
-    </extensions>
+  <extensions defaultExtensionNs="com.intellij">
+    <completion.contributor language="BashPro Shell Script"
+                            implementationClass="com.lancethomps.intellij.ShCustomCompletionContributor" />
+    <!--<completion.contributor language="Shell Script"
+                            implementationClass="com.lancethomps.intellij.ShCustomCompletionContributor"/>-->
+  </extensions>
 </idea-plugin>

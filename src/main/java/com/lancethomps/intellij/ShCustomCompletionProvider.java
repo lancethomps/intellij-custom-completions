@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Level;
 import org.jetbrains.annotations.NotNull;
 
 import com.google.common.cache.CacheBuilder;
@@ -58,6 +59,7 @@ public class ShCustomCompletionProvider extends CompletionProvider<CompletionPar
       } else {
         cache = createCache(Optional.ofNullable(loadedConfig.getCacheExpireAfterSeconds()).orElse(DEFAULT_CACHE_EXPIRE_AFTER_SECONDS));
       }
+      LOG.setLevel(Level.toLevel(loadedConfig.getLogLevel(), Level.DEBUG));
     }
     return loadedConfig;
   }
@@ -88,6 +90,7 @@ public class ShCustomCompletionProvider extends CompletionProvider<CompletionPar
   ) {
     List<LookupElement> elements = new ArrayList<>();
     elements.addAll(getBashFunctionsCompletions(config));
+    elements.addAll(getEnvVarsCompletions(config));
     elements.addAll(getManualCompletions(config));
     elements.addAll(getPathExecutablesCompletions(config));
     return elements;
@@ -96,14 +99,46 @@ public class ShCustomCompletionProvider extends CompletionProvider<CompletionPar
   private static List<LookupElement> getBashFunctionsCompletions(
     @NotNull ShCustomCompletionConfig config
   ) {
+    return Stream.concat(getBashFunctionsFilesCompletions(config), getBashFunctionsManualCompletions(config))
+      .collect(toList());
+  }
+
+  private static Stream<LookupElementBuilder> getBashFunctionsFilesCompletions(
+    @NotNull ShCustomCompletionConfig config
+  ) {
     if (Checks.isEmpty(config.getBashFunctionsFiles())) {
-      return Collections.emptyList();
+      return Stream.empty();
     }
     return config.getBashFunctionsFiles().stream()
       .filter(File::isFile)
-      .flatMap(file -> Patterns.findMatchesAndExtract(BASH_FUNCTIONS_EXTRACTOR, FileUtil.readFile(file), 1).stream())
+      .flatMap(file -> Patterns.findMatchesAndExtract(BASH_FUNCTIONS_EXTRACTOR, FileUtil.readFile(file), 1).stream()
+        .map(LookupElementBuilder::create)
+        .map(elem -> elem.withIcon(PlatformIcons.FUNCTION_ICON).withTypeText(String.format("function (%s)", file.getName()), true)));
+  }
+
+  private static Stream<LookupElementBuilder> getBashFunctionsManualCompletions(
+    @NotNull ShCustomCompletionConfig config
+  ) {
+    if (Checks.isEmpty(config.getAddFunctions())) {
+      return Stream.empty();
+    }
+    return config.getAddFunctions().stream()
       .map(LookupElementBuilder::create)
-      .map(elem -> elem.withIcon(PlatformIcons.FUNCTION_ICON).withTypeText("function", true))
+      .map(elem -> elem.withIcon(PlatformIcons.FUNCTION_ICON).withTypeText("function (manual)", true));
+  }
+
+  private static List<LookupElement> getEnvVarsCompletions(
+    @NotNull ShCustomCompletionConfig config
+  ) {
+    if (Checks.isEmpty(config.getAddEnvVars())) {
+      return Collections.emptyList();
+    }
+    return config.getAddEnvVars().stream()
+      .map(LookupElementBuilder::create)
+      .map(elem -> elem
+        .withIcon(PlatformIcons.VARIABLE_ICON)
+        .withTypeText("Env Var (manual)", true)
+        .withPresentableText(String.format("$%s", elem.getLookupString())))
       .collect(toList());
   }
 
@@ -180,6 +215,8 @@ public class ShCustomCompletionProvider extends CompletionProvider<CompletionPar
       switch (key) {
         case ALL:
           return createElements(config);
+        case ENV_VARS:
+          return getEnvVarsCompletions(config);
         case BASH_FUNCTIONS:
           return getBashFunctionsCompletions(config);
         case MANUAL:

@@ -18,14 +18,14 @@ repositories {
 }
 
 dependencies {
-  compile group: "com.lancethomps", name: "lava", version: "1.6.0"
+  implementation group: "com.lancethomps", name: "lava", version: "1.13.2"
   testImplementation group: "junit", name: "junit", version: "4.13"
 }
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 // See https://github.com/JetBrains/gradle-intellij-plugin/blob/master/FAQ.md
 intellij {
-  version "2021.2"
+  version "2021.3"
 
   pluginName "intellij-custom-completions"
   downloadSources = true
@@ -34,11 +34,14 @@ intellij {
 
   plugins = [
     "java",
-    "sh",
-    "pro.bashsupport:2.0.3.212"
+    "pro.bashsupport:2.1.5.213"
   ]
 }
 patchPluginXml {
   changeNotes """CHANGE NOTES"""
 }
 buildSearchableOptions.enabled = false
+
+tasks.named('wrapper') {
+  distributionType = Wrapper.DistributionType.ALL
+}
