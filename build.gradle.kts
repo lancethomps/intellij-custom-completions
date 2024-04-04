@@ -21,7 +21,7 @@ dependencies {
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 // See https://github.com/JetBrains/gradle-intellij-plugin/blob/master/FAQ.md
 intellij {
-  version.set("2021.3")
+  version.set("2023.3")
 
   pluginName.set("intellij-custom-completions")
   downloadSources.set(true)
@@ -31,7 +31,7 @@ intellij {
   plugins.set(
     listOf(
       "java",
-      "pro.bashsupport:2.1.5.213",
+      "pro.bashsupport:4.0.1.233",
     )
   )
 }

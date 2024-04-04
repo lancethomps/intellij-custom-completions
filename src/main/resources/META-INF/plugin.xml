@@ -13,7 +13,7 @@
   <depends>pro.bashsupport</depends>
 
   <extensions defaultExtensionNs="com.intellij">
-    <completion.contributor language="BashPro Shell Script"
+    <completion.contributor language="BashSupport Pro Shell Script"
                             implementationClass="com.lancethomps.intellij.ShCustomCompletionContributor" />
     <!--<completion.contributor language="Shell Script"
                             implementationClass="com.lancethomps.intellij.ShCustomCompletionContributor"/>-->

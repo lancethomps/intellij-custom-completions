@@ -16,7 +16,7 @@ import com.intellij.util.ProcessingContext;
 
 public class ShCustomCompletionContributor extends CompletionContributor {
 
-  public static final String LANGUAGE_BASH_SUPPORT = "BashPro Shell Script";
+  public static final String LANGUAGE_BASH_SUPPORT = "BashSupport Pro Shell Script";
   public static final String LANGUAGE_SHELL = "Shell Script";
   public static final Set<String> LANGUAGES = ImmutableSet.of(LANGUAGE_SHELL, LANGUAGE_BASH_SUPPORT);
   private static final Logger LOG = Logger.getInstance(ShCustomCompletionContributor.class);
