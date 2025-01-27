@@ -13,7 +13,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Level;
 import org.jetbrains.annotations.NotNull;
 
 import com.google.common.cache.CacheBuilder;
@@ -27,6 +26,7 @@ import com.intellij.codeInsight.completion.PrioritizedLookupElement;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.icons.AllIcons.Nodes;
+import com.intellij.openapi.diagnostic.LogLevel;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.util.PlatformIcons;
 import com.intellij.util.ProcessingContext;
@@ -59,7 +59,7 @@ public class ShCustomCompletionProvider extends CompletionProvider<CompletionPar
       } else {
         cache = createCache(Optional.ofNullable(loadedConfig.getCacheExpireAfterSeconds()).orElse(DEFAULT_CACHE_EXPIRE_AFTER_SECONDS));
       }
-      LOG.setLevel(Level.toLevel(loadedConfig.getLogLevel(), Level.DEBUG));
+      LOG.setLevel(loadedConfig.getLogLevel() == null ? LogLevel.DEBUG : LogLevel.valueOf(loadedConfig.getLogLevel()));
     }
     return loadedConfig;
   }
